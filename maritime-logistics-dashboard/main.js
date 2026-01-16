@@ -1,8 +1,12 @@
 import MaritimeTracker from './src/mapTracker.js'
 import ProductManager from './src/productManager.js'
+import TorontoHub from './src/torontoHub.js'
+import LiveTrackingFilter from './src/liveTrackingFilter.js'
 
 let mapTracker = null
 let productManager = new ProductManager()
+let torontoHub = new TorontoHub()
+let trackingFilter = new LiveTrackingFilter()
 
 const TRANSIT_DATA = {
   "Shanghai-PrinceRupert": 14,
@@ -138,59 +142,49 @@ liveTrackingLink.addEventListener('click', () => {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   liveTrackingLink.classList.add('active');
 
-  dashboardGrid.innerHTML = `
-    <section class="card" style="grid-column: span 12; height: 600px; padding: 0; overflow: hidden;">
-      <div id="vessel-map" style="width: 100%; height: 100%;"></div>
-    </section>
-    <section class="card" style="grid-column: span 12;">
-      <div class="card-title">Fleet Status</div>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-        <div class="fleet-status-card" data-vessel="MSC-OSCAR-001">
-          <strong>MSC OSCAR</strong>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
-            <div>Status: <span style="color: var(--accent-blue)">In Transit</span></div>
-            <div>Speed: 18.5 knots</div>
-            <div>ETA Vancouver: Jan 20, 2026</div>
-          </div>
-          <button class="focus-vessel-btn" style="margin-top: 0.5rem; padding: 0.5rem; font-size: 0.75rem;">
-            Track on Map
-          </button>
-        </div>
-        <div class="fleet-status-card" data-vessel="MAERSK-ESSEN-002">
-          <strong>MAERSK ESSEN</strong>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
-            <div>Status: <span style="color: var(--accent-orange)">Port Delay</span></div>
-            <div>Speed: 2.1 knots</div>
-            <div>ETA LA: Jan 18, 2026</div>
-          </div>
-          <button class="focus-vessel-btn" style="margin-top: 0.5rem; padding: 0.5rem; font-size: 0.75rem;">
-            Track on Map
-          </button>
-        </div>
-        <div class="fleet-status-card" data-vessel="OOCL-HONGKONG-003">
-          <strong>OOCL HONG KONG</strong>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
-            <div>Status: <span style="color: var(--accent-blue)">In Transit</span></div>
-            <div>Speed: 21.3 knots</div>
-            <div>ETA Prince Rupert: Jan 19, 2026</div>
-          </div>
-          <button class="focus-vessel-btn" style="margin-top: 0.5rem; padding: 0.5rem; font-size: 0.75rem;">
-            Track on Map
-          </button>
-        </div>
-      </div>
-    </section>
-  `;
+  const renderTrackingView = () => {
+    dashboardGrid.innerHTML = `
+      <section class="card" style="grid-column: span 12; height: 800px; padding: 0; overflow: hidden;">
+        <div id="vessel-map" style="width: 100%; height: 100%;"></div>
+      </section>
+      <section class="card" style="grid-column: span 12;">
+        <div class="card-title">🌍 Global Fleet Tracking - Real-time Multi-modal</div>
+        ${trackingFilter.renderFilterButtons()}
+        ${trackingFilter.renderVesselCards()}
+      </section>
+    `;
 
-  // Initialize map after DOM is ready
-  setTimeout(() => {
-    if (mapTracker) {
-      mapTracker.destroy();
-    }
-    mapTracker = new MaritimeTracker('vessel-map');
-    mapTracker.initialize();
+    // Attach filter button listeners
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const type = e.target.getAttribute('data-type');
+        trackingFilter.toggleFilter(type);
+        renderTrackingView();
+        
+        // Reinitialize map after filter change
+        setTimeout(() => {
+          if (mapTracker) {
+            mapTracker.destroy();
+          }
+          mapTracker = new MaritimeTracker('vessel-map');
+          mapTracker.initialize();
+          attachVesselFocusListeners();
+        }, 100);
+      });
+    });
 
-    // Add event listeners for focus buttons
+    // Initialize map
+    setTimeout(() => {
+      if (mapTracker) {
+        mapTracker.destroy();
+      }
+      mapTracker = new MaritimeTracker('vessel-map');
+      mapTracker.initialize();
+      attachVesselFocusListeners();
+    }, 100);
+  };
+
+  const attachVesselFocusListeners = () => {
     document.querySelectorAll('.focus-vessel-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const card = e.target.closest('.fleet-status-card');
@@ -198,7 +192,67 @@ liveTrackingLink.addEventListener('click', () => {
         mapTracker.focusOnVessel(vesselId);
       });
     });
-  }, 100);
+  };
+
+  renderTrackingView();
+
+});
+
+// Route Planner Link (same as Dashboard for now)
+const routePlannerLink = document.getElementById('route-planner-link');
+
+routePlannerLink.addEventListener('click', () => {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  routePlannerLink.classList.add('active');
+  
+  if (mapTracker) {
+    mapTracker.destroy();
+    mapTracker = null;
+  }
+  
+  dashboardGrid.innerHTML = DASHBOARD_HTML;
+  document.getElementById('calculate-btn').addEventListener('click', updateResults);
+  updateResults();
+});
+
+// Market Intel Link
+const marketIntelLink = document.getElementById('market-intel-link');
+
+marketIntelLink.addEventListener('click', () => {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  marketIntelLink.classList.add('active');
+  
+  if (mapTracker) {
+    mapTracker.destroy();
+    mapTracker = null;
+  }
+  
+  dashboardGrid.innerHTML = `
+    <section class="card" style="grid-column: span 12;">
+      <div class="card-title">Market Intelligence Dashboard</div>
+      <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+        <h3 style="color: var(--accent-blue); margin-bottom: 1rem;">📈 Real-time Market Analytics</h3>
+        <p>Freight rate trends, capacity forecasts, and competitive intelligence coming soon...</p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem;">
+          <div style="padding: 1.5rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
+            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 0.5rem;">$2,450</div>
+            <div style="font-size: 0.9rem;">Avg. TEU Rate (Shanghai-LA)</div>
+            <div style="font-size: 0.75rem; color: var(--accent-blue); margin-top: 0.5rem;">↓ 3.2% vs last week</div>
+          </div>
+          <div style="padding: 1.5rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
+            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 0.5rem;">82%</div>
+            <div style="font-size: 0.9rem;">Trans-Pacific Capacity Utilization</div>
+            <div style="font-size: 0.75rem; color: var(--accent-orange); margin-top: 0.5rem;">↑ 5.1% vs last month</div>
+          </div>
+          <div style="padding: 1.5rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
+            <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 0.5rem;">14.2d</div>
+            <div style="font-size: 0.9rem;">Avg. Transit Time (Asia-NA)</div>
+            <div style="font-size: 0.75rem; color: var(--accent-blue); margin-top: 0.5rem;">↓ 1.8 days improved</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
 });
 
 const logisticsToolsLink = document.getElementById('logistics-tools-link');
@@ -219,10 +273,27 @@ logisticsToolsLink.addEventListener('click', () => {
 torontoLink.addEventListener('click', () => {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   torontoLink.classList.add('active');
+  
+  if (mapTracker) {
+    mapTracker.destroy();
+    mapTracker = null;
+  }
+  
+  torontoHub.stopAutoRefresh();
+  
+  dashboardGrid.innerHTML = torontoHub.render();
+  
+  // Start auto-refresh
+  torontoHub.startAutoRefresh(() => {
+    dashboardGrid.innerHTML = torontoHub.render();
+  });
+});
 
+// Old Toronto view (backup)
+const showOldTorontoView = () => {
   dashboardGrid.innerHTML = `
     <section class="card route-calculator" style="grid-column: span 12;">
-      <div class="card-title">Toronto Gateway & GTA Logistics</div>
+      <div class="card-title">Toronto Gateway & GTA Logistics (Legacy View)</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
         <div>
           <h3 style="color: var(--accent-blue); margin-bottom: 1rem;">400-Series Highway Monitor</h3>
@@ -276,7 +347,7 @@ torontoLink.addEventListener('click', () => {
       </div>
     </section>
   `;
-});
+};
 
 const trackingTable = document.getElementById('tracking-table');
 
