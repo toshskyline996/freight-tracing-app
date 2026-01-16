@@ -64,6 +64,7 @@ class MaritimeTracker {
     this.vesselMarkers = new Map()
     this.routeLines = new Map()
     this.portMarkers = new Map()
+    this.updateInterval = null
   }
 
   initialize() {
@@ -99,7 +100,7 @@ class MaritimeTracker {
     this.renderRoutes()
 
     // Setup auto-refresh (every 60 seconds)
-    setInterval(() => this.updateVesselPositions(), 60000)
+    this.updateInterval = setInterval(() => this.updateVesselPositions(), 60000)
   }
 
   renderPorts() {
@@ -286,10 +287,17 @@ class MaritimeTracker {
   }
 
   destroy() {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval)
+      this.updateInterval = null
+    }
     if (this.map) {
       this.map.remove()
       this.map = null
     }
+    this.vesselMarkers.clear()
+    this.routeLines.clear()
+    this.portMarkers.clear()
   }
 }
 

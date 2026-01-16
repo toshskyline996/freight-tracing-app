@@ -22,8 +22,9 @@ export default class LiveTrackingFilter {
   }
 
   getAllVessels() {
-    const now = new Date();
-    return [
+    try {
+      const now = new Date();
+      return [
       // Sea vessels
       {
         id: 'MSC-OSCAR-001',
@@ -163,10 +164,15 @@ export default class LiveTrackingFilter {
         cargoDetails: 'Agricultural products'
       }
     ];
+    } catch (error) {
+      console.error('LiveTrackingFilter: Error loading vessel data', error);
+      return [];
+    }
   }
 
   renderFilterButtons() {
-    return `
+    try {
+      return `
       <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
         <span style="color: var(--text-secondary); font-weight: 600; margin-right: 0.5rem;">Filter by Type:</span>
         <button class="filter-btn" data-type="sea" style="
@@ -207,6 +213,10 @@ export default class LiveTrackingFilter {
         </button>
       </div>
     `;
+    } catch (error) {
+      console.error('LiveTrackingFilter: Error rendering filter buttons', error);
+      return '<div style="padding: 1rem; color: var(--accent-orange);">⚠️ Filter unavailable</div>';
+    }
   }
 
   renderVesselCards() {

@@ -2,11 +2,13 @@
 export default class TorontoHub {
   constructor() {
     this.updateInterval = null;
+    this.isRefreshing = false;
   }
 
   // Mock real-time data - replace with actual API calls
   getHighwayStatus() {
-    return [
+    try {
+      return [
       { name: 'Hwy 401 (Milton → Whitby)', status: 'HEAVY', load: 85, color: 'var(--accent-orange)' },
       { name: 'Hwy 407 ETR', status: 'FREE FLOW', load: 20, color: 'var(--accent-blue)' },
       { name: 'Hwy 400 (Barrie → Toronto)', status: 'MODERATE', load: 55, color: 'var(--accent-blue)' },
@@ -14,6 +16,10 @@ export default class TorontoHub {
       { name: 'DVP (Southbound)', status: 'HEAVY', load: 78, color: 'var(--accent-orange)' },
       { name: 'Gardiner Expressway', status: 'MODERATE', load: 65, color: 'var(--accent-blue)' }
     ];
+    } catch (error) {
+      console.error('TorontoHub: Error fetching highway status', error);
+      return [];
+    }
   }
 
   getCNRailTrains() {
@@ -136,6 +142,14 @@ export default class TorontoHub {
 
   renderHighways() {
     const highways = this.getHighwayStatus();
+    
+    if (!highways || highways.length === 0) {
+      return `
+        <div style="background: rgba(255, 107, 107, 0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--accent-orange); text-align: center;">
+          <p style="color: var(--accent-orange); margin: 0;">⚠️ No highway data available</p>
+        </div>
+      `;
+    }
     return `
       <div style="background: rgba(100, 255, 218, 0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--glass-border);">
         <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
@@ -163,6 +177,14 @@ export default class TorontoHub {
 
   renderCNTrains() {
     const trains = this.getCNRailTrains();
+    
+    if (!trains || trains.length === 0) {
+      return `
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          <p>📡 No CN Rail data available</p>
+        </div>
+      `;
+    }
     return `
       <div style="display: flex; flex-direction: column; gap: 1rem;">
         ${trains.map(train => `
@@ -188,6 +210,14 @@ export default class TorontoHub {
 
   renderCPKCTrains() {
     const trains = this.getCPKCTrains();
+    
+    if (!trains || trains.length === 0) {
+      return `
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          <p>📡 No CPKC Rail data available</p>
+        </div>
+      `;
+    }
     return `
       <div style="display: flex; flex-direction: column; gap: 1rem;">
         ${trains.map(train => `
@@ -213,6 +243,14 @@ export default class TorontoHub {
 
   renderPearsonFlights() {
     const flights = this.getPearsonCargoFlights();
+    
+    if (!flights || flights.length === 0) {
+      return `
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          <p>✈️ No cargo flight data available</p>
+        </div>
+      `;
+    }
     return `
       <div style="display: flex; flex-direction: column; gap: 1rem;">
         ${flights.map(flight => `
@@ -295,8 +333,19 @@ export default class TorontoHub {
   }
 
   startAutoRefresh(callback) {
+    // Prevent duplicate intervals
+    if (this.isRefreshing) {
+      console.warn('TorontoHub: Auto-refresh already active');
+      return;
+    }
+    
+    this.stopAutoRefresh();
+    this.isRefreshing = true;
+    
     this.updateInterval = setInterval(() => {
-      callback();
+      if (typeof callback === 'function') {
+        callback();
+      }
     }, 300000); // Refresh every 5 minutes
   }
 
@@ -305,5 +354,6 @@ export default class TorontoHub {
       clearInterval(this.updateInterval);
       this.updateInterval = null;
     }
+    this.isRefreshing = false;
   }
 }

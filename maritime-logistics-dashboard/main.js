@@ -2,11 +2,18 @@ import MaritimeTracker from './src/mapTracker.js'
 import ProductManager from './src/productManager.js'
 import TorontoHub from './src/torontoHub.js'
 import LiveTrackingFilter from './src/liveTrackingFilter.js'
+import PortHub from './src/portHub.js'
+import AIAssistant from './src/aiAssistant.js'
 
 let mapTracker = null
 let productManager = new ProductManager()
 let torontoHub = new TorontoHub()
 let trackingFilter = new LiveTrackingFilter()
+let portHub = new PortHub()
+let aiAssistant = new AIAssistant()
+
+// Load API key from storage on startup
+aiAssistant.loadApiKeyFromStorage()
 
 const TRANSIT_DATA = {
   "Shanghai-PrinceRupert": 14,
@@ -116,6 +123,8 @@ function updateResults() {
 }
 
 const torontoLink = document.getElementById('toronto-link');
+const portsLink = document.getElementById('ports-link');
+const aiAssistantLink = document.getElementById('ai-assistant-link');
 const dashboardLink = document.getElementById('dashboard-link');
 const dashboardGrid = document.querySelector('.dashboard-grid');
 
@@ -280,6 +289,7 @@ torontoLink.addEventListener('click', () => {
   }
   
   torontoHub.stopAutoRefresh();
+  portHub.stopAutoRefresh();
   
   dashboardGrid.innerHTML = torontoHub.render();
   
@@ -287,6 +297,64 @@ torontoLink.addEventListener('click', () => {
   torontoHub.startAutoRefresh(() => {
     dashboardGrid.innerHTML = torontoHub.render();
   });
+});
+
+portsLink.addEventListener('click', () => {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  portsLink.classList.add('active');
+  
+  if (mapTracker) {
+    mapTracker.destroy();
+    mapTracker = null;
+  }
+  
+  torontoHub.stopAutoRefresh();
+  portHub.stopAutoRefresh();
+  
+  const renderPortView = () => {
+    dashboardGrid.innerHTML = portHub.render();
+    
+    // Attach port selector listeners
+    document.querySelectorAll('.port-selector-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const portName = e.target.getAttribute('data-port');
+        portHub.setPort(portName);
+        renderPortView();
+      });
+    });
+  };
+  
+  renderPortView();
+  
+  // Start auto-refresh
+  portHub.startAutoRefresh(() => {
+    renderPortView();
+  });
+});
+
+aiAssistantLink.addEventListener('click', () => {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  aiAssistantLink.classList.add('active');
+  
+  if (mapTracker) {
+    mapTracker.destroy();
+    mapTracker = null;
+  }
+  
+  torontoHub.stopAutoRefresh();
+  portHub.stopAutoRefresh();
+  
+  const renderAIView = () => {
+    dashboardGrid.innerHTML = `
+      <section class="card" style="grid-column: span 12; height: 700px; padding: 0; overflow: hidden;">
+        ${aiAssistant.renderChatInterface()}
+      </section>
+    `;
+    
+    aiAssistant.attachEventListeners(renderAIView);
+  };
+  
+  renderAIView();
 });
 
 // Old Toronto view (backup)
