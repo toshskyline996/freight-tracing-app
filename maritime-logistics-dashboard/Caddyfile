@@ -1,0 +1,52 @@
+{
+	email YXJ19980410@GMAIL.COM
+	admin 127.0.0.1:2022
+}
+
+# Production configuration for freightracing.ca
+freightracing.ca {
+	# Basic Authentication - Single User Protection
+	basic_auth {
+		# Username: admin
+		# Password: Generate with: caddy hash-password --plaintext 'YourSecurePassword'
+		# Replace the hash below with your generated hash
+		admin JDJhJDE0JEhGTnYuLlB5blJ1dEd4Q0xnU2RDWi5OdVdpTkdBaS5nQ0JVd2NZQkZPenN5OGFlQmJiNGd1
+	}
+
+	root * /home/kermityuan/frieght-tracing-app/maritime-logistics-dashboard/dist
+	file_server
+	encode gzip
+
+	# Security Headers
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options "SAMEORIGIN"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	# Enable automatic HTTPS with Let's Encrypt
+	tls YXJ19980410@GMAIL.COM
+
+	# Logging
+	log {
+		output file ./logs/freightracing.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+		level INFO
+	}
+}
+
+# Development/Local configuration (Port 80)
+:80 {
+	root * /home/kermityuan/frieght-tracing-app/maritime-logistics-dashboard/dist
+	file_server
+	encode gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options "SAMEORIGIN"
+	}
+}

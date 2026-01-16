@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarineMajor | Global Logistics Orchestrator</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <span>🚢</span> MarineMajor
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link active" id="dashboard-link"><span>📊</span> Dashboard</a>
+        <a class="nav-link"><span>🗺️</span> Route Planner</a>
+        <a class="nav-link" id="toronto-link"><span>🏙️</span> Toronto Hub</a>
+        <a class="nav-link" id="live-tracking-link"><span>📡</span> Live Tracking</a>
+        <a class="nav-link"><span>📉</span> Market Intel</a>
+        <a class="nav-link" id="logistics-tools-link"><span>🛠️</span> Product & HS Codes</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="header">
+        <div>
+          <h1>Global Dashboard</h1>
+          <p style="color: var(--text-secondary); margin-top: 0.5rem;">Real-time Multi-modal Route Optimization</p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <div class="status-pill status-online">SYSTEM STATUS: OPTIMIZED</div>
+        </div>
+      </header>
+
+      <div class="dashboard-grid">
+        <!-- Route Calculator Module -->
+        <section class="card route-calculator">
+          <div class="card-title">
+            <span>Route Intelligence Engine</span>
+            <span style="color: var(--accent-blue)">AI POWERED</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+              <div class="input-group">
+                <label>Origin</label>
+                <select id="origin">
+                  <option value="Shanghai">Shanghai, China</option>
+                  <option value="Mumbai">Mumbai, India</option>
+                  <option value="Rotterdam">Rotterdam, Netherlands</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Destination</label>
+                <select id="destination">
+                  <option value="Toronto">Toronto, Canada</option>
+                  <option value="Chicago">Chicago, USA</option>
+                  <option value="Memphis">Memphis, USA</option>
+                  <option value="Mexico City">Mexico City, Mexico</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Service Mode</label>
+                <select id="mode">
+                  <option value="Standard">Standard Multi-modal</option>
+                  <option value="Premium">Priority Rail</option>
+                  <option value="Safest">Risk Avoidance (Avoid Chokepoints)</option>
+                </select>
+              </div>
+              <button id="calculate-btn">Calculate Best Route</button>
+            </div>
+            <div id="results-display" style="border-left: 1px solid var(--glass-border); padding-left: 2rem;">
+              <p style="color: var(--text-secondary); font-style: italic;">Enter parameters to generate logistics
+                pipeline...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tracking Monitor -->
+        <section class="card tracking-monitor">
+          <div class="card-title">Active Fleet Tracking</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Vessel / Probill</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tracking-table">
+              <tr>
+                <td>MSC OSCAR</td>
+                <td><span class="status-pill status-online">In Transit</span></td>
+              </tr>
+              <tr>
+                <td>MAERSK ESSEN</td>
+                <td><span class="status-pill status-warning">Port Delay</span></td>
+              </tr>
+              <tr>
+                <td>CNRU 9821-B</td>
+                <td><span class="status-pill status-online">En Route (Rail)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Market Intel Card -->
+        <section class="card stats-panel">
+          <div class="card-title">Live Logistics Intel</div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="background: rgba(255,107,107,0.05); padding: 1rem; border-radius: 8px;">
+              <div style="color: var(--accent-orange); font-weight: 600; margin-bottom: 0.25rem;">BAB-EL-MANDEB / SUEZ
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary)">High Risk: 60% traffic reduction. Cape detour
+                adds 10-15 days to Asia-Europe/NA loops.</p>
+            </div>
+            <div style="background: rgba(100,255,218,0.05); padding: 1rem; border-radius: 8px;">
+              <div style="color: var(--accent-blue); font-weight: 600; margin-bottom: 0.25rem;">PANAMA CANAL</div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary)">Normal Ops: Draught restrictions eased. 34-36
+                slots daily. Northbound transit stable.</p>
+            </div>
+            <div style="background: rgba(100,255,218,0.05); padding: 1rem; border-radius: 8px;">
+              <div style="color: var(--text-primary); font-size: 0.7rem; opacity: 0.7;">LAST UPDATED: JAN 2026 via
+                Perplexity AI</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>
