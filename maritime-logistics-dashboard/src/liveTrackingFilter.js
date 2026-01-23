@@ -172,6 +172,7 @@ export default class LiveTrackingFilter {
 
   renderFilterButtons() {
     try {
+      const allVessels = this.getAllVessels();
       return `
       <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
         <span style="color: var(--text-secondary); font-weight: 600; margin-right: 0.5rem;">Filter by Type:</span>
@@ -185,7 +186,7 @@ export default class LiveTrackingFilter {
           font-weight: 600;
           transition: all 0.3s;
         ">
-          🚢 Sea (${this.getAllVessels().filter(v => v.type === 'sea').length})
+          🚢 Sea (${allVessels.filter(v => v.type === 'sea').length})
         </button>
         <button class="filter-btn" data-type="air" style="
           padding: 0.5rem 1.5rem;
@@ -197,7 +198,7 @@ export default class LiveTrackingFilter {
           font-weight: 600;
           transition: all 0.3s;
         ">
-          ✈️ Air (${this.getAllVessels().filter(v => v.type === 'air').length})
+          ✈️ Air (${allVessels.filter(v => v.type === 'air').length})
         </button>
         <button class="filter-btn" data-type="rail" style="
           padding: 0.5rem 1.5rem;
@@ -209,7 +210,7 @@ export default class LiveTrackingFilter {
           font-weight: 600;
           transition: all 0.3s;
         ">
-          🚂 Rail (${this.getAllVessels().filter(v => v.type === 'rail').length})
+          🚂 Rail (${allVessels.filter(v => v.type === 'rail').length})
         </button>
       </div>
     `;
