@@ -127,11 +127,12 @@ const portsLink = document.getElementById('ports-link');
 const aiAssistantLink = document.getElementById('ai-assistant-link');
 const dashboardLink = document.getElementById('dashboard-link');
 const dashboardGrid = document.querySelector('.dashboard-grid');
+const navLinks = document.querySelectorAll('.nav-link');
 
 const DASHBOARD_HTML = dashboardGrid.innerHTML;
 
 dashboardLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   dashboardLink.classList.add('active');
   
   // Cleanup map if it exists
@@ -148,7 +149,7 @@ dashboardLink.addEventListener('click', () => {
 const liveTrackingLink = document.getElementById('live-tracking-link');
 
 liveTrackingLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   liveTrackingLink.classList.add('active');
 
   const renderTrackingView = () => {
@@ -211,7 +212,7 @@ liveTrackingLink.addEventListener('click', () => {
 const routePlannerLink = document.getElementById('route-planner-link');
 
 routePlannerLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   routePlannerLink.classList.add('active');
   
   if (mapTracker) {
@@ -228,7 +229,7 @@ routePlannerLink.addEventListener('click', () => {
 const marketIntelLink = document.getElementById('market-intel-link');
 
 marketIntelLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   marketIntelLink.classList.add('active');
   
   if (mapTracker) {
@@ -267,7 +268,7 @@ marketIntelLink.addEventListener('click', () => {
 const logisticsToolsLink = document.getElementById('logistics-tools-link');
 
 logisticsToolsLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   logisticsToolsLink.classList.add('active');
   
   if (mapTracker) {
@@ -280,7 +281,7 @@ logisticsToolsLink.addEventListener('click', () => {
 });
 
 torontoLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   torontoLink.classList.add('active');
   
   if (mapTracker) {
@@ -300,7 +301,7 @@ torontoLink.addEventListener('click', () => {
 });
 
 portsLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   portsLink.classList.add('active');
   
   if (mapTracker) {
@@ -333,7 +334,7 @@ portsLink.addEventListener('click', () => {
 });
 
 aiAssistantLink.addEventListener('click', () => {
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
   aiAssistantLink.classList.add('active');
   
   if (mapTracker) {
