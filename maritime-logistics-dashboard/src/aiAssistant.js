@@ -272,22 +272,20 @@ Assistant: "Recommended route: Shanghai → Prince Rupert (14 days sea) → Toro
   }
 
   escapeHtml(text) {
-    const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   formatMessage(text) {
-    // Escape HTML first to prevent XSS
-    const escaped = this.escapeHtml(text);
+    // First escape HTML to prevent XSS
+    const safeText = this.escapeHtml(text);
 
-    // Simple markdown-like formatting
-    return escaped
+    // Then apply simple markdown-like formatting
+    return safeText
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n/g, '<br>');
