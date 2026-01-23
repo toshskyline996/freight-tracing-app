@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import json
 import time
 import re
+import os
 from datetime import datetime
 from typing import List, Dict, Optional
 import logging
@@ -261,13 +262,16 @@ def main():
     
     # Optionally save to PostgreSQL
     # db_config = {
-    #     'host': 'localhost',
-    #     'port': 5432,
-    #     'database': 'freight_automation',
-    #     'user': 'freight',
-    #     'password': 'freight123'
+    #     'host': os.getenv('DB_HOST', 'localhost'),
+    #     'port': int(os.getenv('DB_PORT', 5432)),
+    #     'database': os.getenv('DB_NAME', 'freight_automation'),
+    #     'user': os.getenv('DB_USER', 'freight'),
+    #     'password': os.getenv('DB_PASSWORD')
     # }
-    # scraper.save_to_postgresql(db_config)
+    # if db_config['password']:
+    #     scraper.save_to_postgresql(db_config)
+    # else:
+    #     logger.warning("DB_PASSWORD not set, skipping PostgreSQL save")
     
     logger.info("Scraping completed!")
 
