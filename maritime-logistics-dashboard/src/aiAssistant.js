@@ -272,7 +272,6 @@ Assistant: "Recommended route: Shanghai → Prince Rupert (14 days sea) → Toro
   }
 
   escapeHtml(text) {
-    if (!text) return text;
     return text
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -282,10 +281,10 @@ Assistant: "Recommended route: Shanghai → Prince Rupert (14 days sea) → Toro
   }
 
   formatMessage(text) {
-    // Escape HTML first to prevent XSS
+    // First escape HTML to prevent XSS
     const safeText = this.escapeHtml(text);
 
-    // Simple markdown-like formatting
+    // Then apply simple markdown-like formatting
     return safeText
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
