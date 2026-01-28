@@ -1,5 +1,6 @@
 // Product Manager UI Module
 import HSCodeLookup from './hsCodeLookup.js'
+import { escapeHtml } from './utils.js'
 
 class ProductManager {
   constructor() {
@@ -47,12 +48,12 @@ class ProductManager {
                 ${products.map(p => `
                   <tr>
                     <td>
-                      <strong>${p.name}</strong>
+                      <strong>${escapeHtml(p.name)}</strong>
                       <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                        ${p.description}
+                        ${escapeHtml(p.description)}
                       </div>
                     </td>
-                    <td><code style="color: var(--accent-blue)">${p.hsCode}</code></td>
+                    <td><code style="color: var(--accent-blue)">${escapeHtml(p.hsCode)}</code></td>
                     <td>${p.weight} kg</td>
                     <td>$${p.value}</td>
                     <td>${p.origin}</td>
