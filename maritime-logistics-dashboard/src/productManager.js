@@ -1,5 +1,6 @@
 // Product Manager UI Module
 import HSCodeLookup from './hsCodeLookup.js'
+import { escapeHtml } from './utils.js'
 
 class ProductManager {
   constructor() {
@@ -47,15 +48,15 @@ class ProductManager {
                 ${products.map(p => `
                   <tr>
                     <td>
-                      <strong>${p.name}</strong>
+                      <strong>${escapeHtml(p.name)}</strong>
                       <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                        ${p.description}
+                        ${escapeHtml(p.description)}
                       </div>
                     </td>
-                    <td><code style="color: var(--accent-blue)">${p.hsCode}</code></td>
-                    <td>${p.weight} kg</td>
-                    <td>$${p.value}</td>
-                    <td>${p.origin}</td>
+                    <td><code style="color: var(--accent-blue)">${escapeHtml(p.hsCode)}</code></td>
+                    <td>${escapeHtml(p.weight)} kg</td>
+                    <td>$${escapeHtml(p.value)}</td>
+                    <td>${escapeHtml(p.origin)}</td>
                     <td>
                       <button class="delete-product-btn" data-id="${p.id}" 
                         style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: rgba(255,107,107,0.1); 
@@ -201,11 +202,11 @@ class ProductManager {
                 style="width: 100%; padding: 0.75rem; background: var(--bg-deep); 
                 border: 1px solid var(--glass-border); border-radius: 6px; color: var(--text-primary); 
                 resize: vertical; font-family: inherit;"
-                placeholder="Detailed product description...">${hsDescription}</textarea>
+                placeholder="Detailed product description...">${escapeHtml(hsDescription)}</textarea>
             </div>
             <div class="input-group">
               <label>HS Code *</label>
-              <input type="text" id="product-hs-code" required value="${hsCode}" placeholder="e.g., 6109.10.00">
+              <input type="text" id="product-hs-code" required value="${escapeHtml(hsCode)}" placeholder="e.g., 6109.10.00">
               <small style="color: var(--text-secondary); font-size: 0.75rem;">
                 Search above to find the correct HS code
               </small>
