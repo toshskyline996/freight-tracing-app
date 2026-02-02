@@ -1,5 +1,6 @@
 // Product Manager UI Module
 import HSCodeLookup from './hsCodeLookup.js'
+import { escapeHtml } from './utils.js'
 
 class ProductManager {
   constructor() {
@@ -47,17 +48,17 @@ class ProductManager {
                 ${products.map(p => `
                   <tr>
                     <td>
-                      <strong>${p.name}</strong>
+                      <strong>${escapeHtml(p.name)}</strong>
                       <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                        ${p.description}
+                        ${escapeHtml(p.description)}
                       </div>
                     </td>
-                    <td><code style="color: var(--accent-blue)">${p.hsCode}</code></td>
-                    <td>${p.weight} kg</td>
-                    <td>$${p.value}</td>
-                    <td>${p.origin}</td>
+                    <td><code style="color: var(--accent-blue)">${escapeHtml(p.hsCode)}</code></td>
+                    <td>${escapeHtml(String(p.weight))} kg</td>
+                    <td>$${escapeHtml(String(p.value))}</td>
+                    <td>${escapeHtml(p.origin)}</td>
                     <td>
-                      <button class="delete-product-btn" data-id="${p.id}" 
+                      <button class="delete-product-btn" data-id="${escapeHtml(p.id)}"
                         style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: rgba(255,107,107,0.1); 
                         color: var(--accent-orange); border: 1px solid var(--accent-orange);">
                         Delete
@@ -145,19 +146,19 @@ class ProductManager {
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
                   <code style="background: rgba(100, 255, 218, 0.1); padding: 0.25rem 0.5rem; 
                     border-radius: 4px; color: var(--accent-blue); font-weight: 700; font-size: 0.9rem;">
-                    ${item.fullCode}
+                    ${escapeHtml(item.fullCode)}
                   </code>
                   <span style="color: var(--accent-orange); font-size: 0.75rem; font-weight: 600;">
-                    Duty: ${item.dutyRate}
+                    Duty: ${escapeHtml(item.dutyRate)}
                   </span>
                 </div>
-                <p style="font-size: 0.85rem; margin-bottom: 0.5rem;">${item.description}</p>
+                <p style="font-size: 0.85rem; margin-bottom: 0.5rem;">${escapeHtml(item.description)}</p>
                 <p style="font-size: 0.75rem; color: var(--text-secondary);">
-                  ${item.chapter}<br/>
-                  ${item.heading}
+                  ${escapeHtml(item.chapter)}<br/>
+                  ${escapeHtml(item.heading)}
                 </p>
               </div>
-              <button class="use-hs-code-btn" data-code="${item.fullCode}" data-description="${item.description}"
+              <button class="use-hs-code-btn" data-code="${escapeHtml(item.fullCode)}" data-description="${escapeHtml(item.description)}"
                 style="padding: 0.5rem 1rem; font-size: 0.75rem; white-space: nowrap; margin-left: 1rem;">
                 Use This Code
               </button>
@@ -201,11 +202,11 @@ class ProductManager {
                 style="width: 100%; padding: 0.75rem; background: var(--bg-deep); 
                 border: 1px solid var(--glass-border); border-radius: 6px; color: var(--text-primary); 
                 resize: vertical; font-family: inherit;"
-                placeholder="Detailed product description...">${hsDescription}</textarea>
+                placeholder="Detailed product description...">${escapeHtml(hsDescription)}</textarea>
             </div>
             <div class="input-group">
               <label>HS Code *</label>
-              <input type="text" id="product-hs-code" required value="${hsCode}" placeholder="e.g., 6109.10.00">
+              <input type="text" id="product-hs-code" required value="${escapeHtml(hsCode)}" placeholder="e.g., 6109.10.00">
               <small style="color: var(--text-secondary); font-size: 0.75rem;">
                 Search above to find the correct HS code
               </small>

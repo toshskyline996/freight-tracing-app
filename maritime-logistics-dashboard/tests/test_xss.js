@@ -1,4 +1,4 @@
-import AIAssistant from './src/aiAssistant.js';
+import AIAssistant from '../src/aiAssistant.js';
 
 console.log("Running XSS Reproduction...");
 
