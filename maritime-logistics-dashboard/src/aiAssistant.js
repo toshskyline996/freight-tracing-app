@@ -1,3 +1,5 @@
+import { escapeHtml } from './utils.js';
+
 // AI Assistant Module - Gemini 2.0 Flash Integration
 export default class AIAssistant {
   constructor(apiKey = null) {
@@ -271,18 +273,9 @@ Assistant: "Recommended route: Shanghai → Prince Rupert (14 days sea) → Toro
     }).join('');
   }
 
-  escapeHtml(text) {
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
   formatMessage(text) {
     // First escape HTML to prevent XSS
-    const safeText = this.escapeHtml(text);
+    const safeText = escapeHtml(text);
 
     // Then apply simple markdown-like formatting
     return safeText
