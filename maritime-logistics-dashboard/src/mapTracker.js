@@ -169,24 +169,37 @@ class MaritimeTracker {
 
   _connectAISStream(apiKey) {
     try {
+      console.log('AISStream: connecting to', AISSTREAM_WS_URL)
+      this._setStatus('⏳ Connecting to AISStream...', '#fbbf24')
       this.ws = new WebSocket(AISSTREAM_WS_URL)
 
+      // Connection timeout: if not open within 8s, fall back
+      const connectTimeout = setTimeout(() => {
+        if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
+          console.warn('AISStream: connection timeout, falling back to mock')
+          this.ws.close()
+          this._fallbackToMock()
+        }
+      }, 8000)
+
       this.ws.onopen = () => {
-        console.log('AISStream: connected')
+        clearTimeout(connectTimeout)
+        console.log('AISStream: connected ✓')
         this.wsReconnectCount = 0
         this._setStatus('🟢 AISStream.io — Live', '#64ffda')
         this.usingRealData = true
 
-        // Subscribe to Pacific + Atlantic regions covering trans-Pacific routes
+        // AISStream BoundingBoxes: array of [[minLat, minLng], [maxLat, maxLng]]
         const subscriptionMsg = {
           Apikey: apiKey,
           BoundingBoxes: [
-            [[-60, -180], [70, -60]],  // Americas + Pacific
-            [[0, 100], [70, 180]]       // East Asia + W Pacific
+            [[-60, -180], [70, -60]],
+            [[0, 100], [70, 180]]
           ],
-          FilterMessageTypes: ['PositionReport', 'ShipStaticData']
+          FilterMessageTypes: ['PositionReport']
         }
         this.ws.send(JSON.stringify(subscriptionMsg))
+        console.log('AISStream: subscription sent')
       }
 
       this.ws.onmessage = (event) => {
@@ -199,29 +212,32 @@ class MaritimeTracker {
       }
 
       this.ws.onerror = (err) => {
+        clearTimeout(connectTimeout)
         console.error('AISStream: WebSocket error', err)
-        this._setStatus('🔴 Connection Error', '#ef4444')
+        this._setStatus('🔴 AIS Connection Failed', '#ef4444')
+        // onerror is always followed by onclose, so let onclose handle retry
       }
 
-      this.ws.onclose = () => {
-        console.warn('AISStream: connection closed')
-        this._setStatus('🟡 Reconnecting...', '#fbbf24')
-        this._scheduleReconnect(apiKey)
+      this.ws.onclose = (event) => {
+        clearTimeout(connectTimeout)
+        console.warn(`AISStream: closed code=${event.code} wasClean=${event.wasClean}`)
+
+        if (this.wsReconnectCount >= MAX_RECONNECT_ATTEMPTS) {
+          this._fallbackToMock()
+        } else {
+          this._setStatus('🟡 Reconnecting...', '#fbbf24')
+          this._scheduleReconnect(apiKey)
+        }
       }
     } catch (err) {
-      console.error('AISStream: failed to connect', err)
+      console.error('AISStream: exception creating WebSocket', err)
       this._fallbackToMock()
     }
   }
 
   _scheduleReconnect(apiKey) {
-    if (this.wsReconnectCount >= MAX_RECONNECT_ATTEMPTS) {
-      console.warn('AISStream: max reconnect attempts reached, falling back to mock')
-      this._fallbackToMock()
-      return
-    }
     this.wsReconnectCount++
-    console.log(`AISStream: reconnect attempt ${this.wsReconnectCount}/${MAX_RECONNECT_ATTEMPTS}`)
+    console.log(`AISStream: reconnect attempt ${this.wsReconnectCount}/${MAX_RECONNECT_ATTEMPTS} in ${RECONNECT_DELAY_MS}ms`)
     setTimeout(() => this._connectAISStream(apiKey), RECONNECT_DELAY_MS)
   }
 
