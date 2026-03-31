@@ -160,7 +160,9 @@ liveTrackingLink.addEventListener('click', () => {
       <section class="card" style="grid-column: span 12;">
         <div class="card-title">🌍 Global Fleet Tracking - Real-time Multi-modal</div>
         ${trackingFilter.renderFilterButtons()}
-        ${trackingFilter.renderVesselCards()}
+        <div id="vessel-cards-container">
+          ${trackingFilter.renderVesselCards()}
+        </div>
       </section>
     `;
 
@@ -170,7 +172,7 @@ liveTrackingLink.addEventListener('click', () => {
         const type = e.target.getAttribute('data-type');
         trackingFilter.toggleFilter(type);
         renderTrackingView();
-        
+
         // Reinitialize map after filter change
         setTimeout(() => {
           if (mapTracker) {
@@ -192,6 +194,27 @@ liveTrackingLink.addEventListener('click', () => {
       mapTracker.initialize();
       attachVesselFocusListeners();
     }, 100);
+
+    // Start OpenSky auto-refresh for live flight data
+    trackingFilter.stopAutoRefresh();
+    trackingFilter.startAutoRefresh(() => {
+      const cardsContainer = document.getElementById('vessel-cards-container');
+      if (cardsContainer) {
+        cardsContainer.innerHTML = trackingFilter.renderVesselCards();
+        attachVesselFocusListeners();
+      }
+      // Re-render filter buttons to update data-source label
+      const filterSection = document.querySelector('.card-title + div');
+      if (filterSection) {
+        filterSection.outerHTML = trackingFilter.renderFilterButtons();
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            trackingFilter.toggleFilter(e.target.getAttribute('data-type'));
+            renderTrackingView();
+          });
+        });
+      }
+    });
   };
 
   const attachVesselFocusListeners = () => {
