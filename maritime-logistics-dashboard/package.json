@@ -6,12 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "ais-proxy": "node ais-proxy.js",
+    "dev:full": "node ais-proxy.js & vite"
   },
   "devDependencies": {
     "vite": "^7.2.4"
   },
   "dependencies": {
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "ws": "^8.20.0"
   }
 }

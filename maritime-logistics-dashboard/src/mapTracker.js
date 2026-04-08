@@ -61,7 +61,12 @@ const MOCK_VESSELS = [
   }
 ]
 
-const AISSTREAM_WS_URL = 'wss://stream.aisstream.io/v0/stream'
+// In production, connect via the same domain (Caddy proxies /ws/ais → localhost:3099)
+// In dev, connect to local proxy directly
+const AISSTREAM_WS_URL = import.meta.env.VITE_AIS_PROXY_URL ||
+  (location.protocol === 'https:'
+    ? `wss://${location.host}/ws/ais`
+    : 'ws://localhost:3099')
 const MAX_RECONNECT_ATTEMPTS = 5
 const RECONNECT_DELAY_MS = 3000
 const MAX_AIS_VESSELS = 50 // limit markers on map
@@ -106,16 +111,10 @@ class MaritimeTracker {
     this._addStatusBadge()
     this.renderPorts()
 
-    const apiKey = this._getApiKey()
-    if (apiKey) {
-      this._connectAISStream(apiKey)
-    } else {
-      console.warn('MapTracker: VITE_AISSTREAM_API_KEY not set — using mock data')
-      this._showMockBadge()
-      this.renderVessels()
-      this.renderRoutes()
-      this.updateInterval = setInterval(() => this.updateVesselPositions(), 60000)
-    }
+    // Always try connecting to the local AIS proxy.
+    // The proxy handles API key & upstream auth; browser never exposes the key.
+    // If proxy is not running, we fall back to mock data after timeout.
+    this._connectAISStream()
   }
 
   _getApiKey() {
@@ -167,10 +166,10 @@ class MaritimeTracker {
 
   // ─── AISStream WebSocket ───────────────────────────────────────────────────
 
-  _connectAISStream(apiKey) {
+  _connectAISStream(_apiKey) {
     try {
-      console.log('AISStream: connecting to', AISSTREAM_WS_URL)
-      this._setStatus('⏳ Connecting to AISStream...', '#fbbf24')
+      console.log('AISStream: connecting to proxy at', AISSTREAM_WS_URL)
+      this._setStatus('⏳ Connecting to AIS Proxy...', '#fbbf24')
       this.ws = new WebSocket(AISSTREAM_WS_URL)
 
       // Connection timeout: if not open within 8s, fall back
@@ -184,22 +183,13 @@ class MaritimeTracker {
 
       this.ws.onopen = () => {
         clearTimeout(connectTimeout)
-        console.log('AISStream: connected ✓')
+        console.log('AISStream: connected via proxy ✓')
         this.wsReconnectCount = 0
         this._setStatus('🟢 AISStream.io — Live', '#64ffda')
         this.usingRealData = true
-
-        // AISStream BoundingBoxes: array of [[minLat, minLng], [maxLat, maxLng]]
-        const subscriptionMsg = {
-          Apikey: apiKey,
-          BoundingBoxes: [
-            [[-60, -180], [70, -60]],
-            [[0, 100], [70, 180]]
-          ],
-          FilterMessageTypes: ['PositionReport']
-        }
-        this.ws.send(JSON.stringify(subscriptionMsg))
-        console.log('AISStream: subscription sent')
+        // Proxy handles API key & subscription automatically.
+        // Send custom BoundingBoxes to override if needed:
+        // this.ws.send(JSON.stringify({ BoundingBoxes: [...] }))
       }
 
       this.ws.onmessage = (event) => {
@@ -226,7 +216,7 @@ class MaritimeTracker {
           this._fallbackToMock()
         } else {
           this._setStatus('🟡 Reconnecting...', '#fbbf24')
-          this._scheduleReconnect(apiKey)
+          this._scheduleReconnect()
         }
       }
     } catch (err) {
@@ -235,10 +225,10 @@ class MaritimeTracker {
     }
   }
 
-  _scheduleReconnect(apiKey) {
+  _scheduleReconnect() {
     this.wsReconnectCount++
     console.log(`AISStream: reconnect attempt ${this.wsReconnectCount}/${MAX_RECONNECT_ATTEMPTS} in ${RECONNECT_DELAY_MS}ms`)
-    setTimeout(() => this._connectAISStream(apiKey), RECONNECT_DELAY_MS)
+    setTimeout(() => this._connectAISStream(), RECONNECT_DELAY_MS)
   }
 
   _fallbackToMock() {

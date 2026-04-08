@@ -4,6 +4,7 @@ import TorontoHub from './src/torontoHub.js'
 import LiveTrackingFilter from './src/liveTrackingFilter.js'
 import PortHub from './src/portHub.js'
 import AIAssistant from './src/aiAssistant.js'
+import ShipmentManager from './src/shipmentManager.js'
 
 let mapTracker = null
 let productManager = new ProductManager()
@@ -11,6 +12,7 @@ let torontoHub = new TorontoHub()
 let trackingFilter = new LiveTrackingFilter()
 let portHub = new PortHub()
 let aiAssistant = new AIAssistant()
+let shipmentManager = new ShipmentManager()
 
 // Load API key from storage on startup
 aiAssistant.loadApiKeyFromStorage()
@@ -122,24 +124,33 @@ function updateResults() {
   resultsDisplay.innerHTML = html;
 }
 
+const shipmentManagerLink = document.getElementById('shipment-manager-link');
 const torontoLink = document.getElementById('toronto-link');
 const portsLink = document.getElementById('ports-link');
 const aiAssistantLink = document.getElementById('ai-assistant-link');
+const logisticsToolsLink = document.getElementById('logistics-tools-link');
 const dashboardLink = document.getElementById('dashboard-link');
+
 const dashboardGrid = document.querySelector('.dashboard-grid');
 const navLinks = document.querySelectorAll('.nav-link');
 
 const DASHBOARD_HTML = dashboardGrid.innerHTML;
 
-dashboardLink.addEventListener('click', () => {
-  navLinks.forEach(l => l.classList.remove('active'));
-  dashboardLink.classList.add('active');
-  
-  // Cleanup map if it exists
+function clearHubs() {
   if (mapTracker) {
     mapTracker.destroy();
     mapTracker = null;
   }
+  torontoHub.stopAutoRefresh();
+  portHub.stopAutoRefresh();
+  trackingFilter.stopAutoRefresh();
+}
+
+dashboardLink.addEventListener('click', () => {
+  navLinks.forEach(l => l.classList.remove('active'));
+  dashboardLink.classList.add('active');
+  
+  clearHubs();
   
   dashboardGrid.innerHTML = DASHBOARD_HTML;
   document.getElementById('calculate-btn').addEventListener('click', updateResults);
@@ -151,6 +162,8 @@ const liveTrackingLink = document.getElementById('live-tracking-link');
 liveTrackingLink.addEventListener('click', () => {
   navLinks.forEach(l => l.classList.remove('active'));
   liveTrackingLink.classList.add('active');
+  
+  clearHubs();
 
   const renderTrackingView = () => {
     dashboardGrid.innerHTML = `
@@ -196,7 +209,6 @@ liveTrackingLink.addEventListener('click', () => {
     }, 100);
 
     // Start OpenSky auto-refresh for live flight data
-    trackingFilter.stopAutoRefresh();
     trackingFilter.startAutoRefresh(() => {
       const cardsContainer = document.getElementById('vessel-cards-container');
       if (cardsContainer) {
@@ -238,14 +250,65 @@ routePlannerLink.addEventListener('click', () => {
   navLinks.forEach(l => l.classList.remove('active'));
   routePlannerLink.classList.add('active');
   
-  if (mapTracker) {
-    mapTracker.destroy();
-    mapTracker = null;
-  }
+  clearHubs();
   
   dashboardGrid.innerHTML = DASHBOARD_HTML;
   document.getElementById('calculate-btn').addEventListener('click', updateResults);
   updateResults();
+});
+
+// Toronto Hub Link
+torontoLink.addEventListener('click', () => {
+  navLinks.forEach(l => l.classList.remove('active'));
+  torontoLink.classList.add('active');
+  
+  clearHubs();
+  
+  const renderView = () => {
+    dashboardGrid.innerHTML = torontoHub.render();
+  };
+  
+  renderView();
+  torontoHub.startAutoRefresh(renderView);
+});
+
+// Ports Link
+portsLink.addEventListener('click', () => {
+  navLinks.forEach(l => l.classList.remove('active'));
+  portsLink.classList.add('active');
+  
+  clearHubs();
+  
+  const renderView = () => {
+    dashboardGrid.innerHTML = portHub.render();
+    
+    // Attach port selection listeners
+    document.querySelectorAll('.port-selector-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const portId = e.currentTarget.getAttribute('data-port');
+        portHub.setPort(portId);
+        renderView();
+      });
+    });
+  };
+  
+  renderView();
+  portHub.startAutoRefresh(renderView);
+});
+
+// AI Assistant Link
+aiAssistantLink.addEventListener('click', () => {
+  navLinks.forEach(l => l.classList.remove('active'));
+  aiAssistantLink.classList.add('active');
+  
+  clearHubs();
+  
+  const renderView = () => {
+    dashboardGrid.innerHTML = aiAssistant.renderChatInterface();
+    aiAssistant.attachEventListeners(renderView);
+  };
+  
+  renderView();
 });
 
 // Market Intel Link
@@ -255,10 +318,7 @@ marketIntelLink.addEventListener('click', () => {
   navLinks.forEach(l => l.classList.remove('active'));
   marketIntelLink.classList.add('active');
   
-  if (mapTracker) {
-    mapTracker.destroy();
-    mapTracker = null;
-  }
+  clearHubs();
   
   dashboardGrid.innerHTML = `
     <section class="card" style="grid-column: span 12;">
@@ -275,12 +335,12 @@ marketIntelLink.addEventListener('click', () => {
           <div style="padding: 1.5rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
             <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 0.5rem;">82%</div>
             <div style="font-size: 0.9rem;">Trans-Pacific Capacity Utilization</div>
-            <div style="font-size: 0.75rem; color: var(--accent-orange); margin-top: 0.5rem;">↑ 5.1% vs last month</div>
+            <div style="font-size: 0.75rem; color: #4ade80; margin-top: 0.5rem;">↑ 1.5% stable growth</div>
           </div>
           <div style="padding: 1.5rem; background: rgba(100, 255, 218, 0.05); border-radius: 8px;">
             <div style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 0.5rem;">14.2d</div>
-            <div style="font-size: 0.9rem;">Avg. Transit Time (Asia-NA)</div>
-            <div style="font-size: 0.75rem; color: var(--accent-blue); margin-top: 0.5rem;">↓ 1.8 days improved</div>
+            <div style="font-size: 0.9rem;">Mean Transit Time (Ocean)</div>
+            <div style="font-size: 0.75rem; color: var(--accent-orange); margin-top: 0.5rem;">↑ 2.1d delay (Red Sea)</div>
           </div>
         </div>
       </div>
@@ -288,158 +348,35 @@ marketIntelLink.addEventListener('click', () => {
   `;
 });
 
-const logisticsToolsLink = document.getElementById('logistics-tools-link');
+// Shipment Manager Link
+shipmentManagerLink.addEventListener('click', () => {
+  navLinks.forEach(l => l.classList.remove('active'));
+  shipmentManagerLink.classList.add('active');
+  
+  clearHubs();
+  
+  const renderShipmentView = () => {
+    dashboardGrid.innerHTML = shipmentManager.renderView();
+    shipmentManager.attachListeners(renderShipmentView);
+  };
+  
+  renderShipmentView();
+});
 
+// Logistics Tools / HS Codes Link
 logisticsToolsLink.addEventListener('click', () => {
   navLinks.forEach(l => l.classList.remove('active'));
   logisticsToolsLink.classList.add('active');
   
-  if (mapTracker) {
-    mapTracker.destroy();
-    mapTracker = null;
-  }
+  clearHubs();
   
-  dashboardGrid.innerHTML = productManager.renderProductLibrary();
-  productManager.attachEventListeners();
-});
-
-torontoLink.addEventListener('click', () => {
-  navLinks.forEach(l => l.classList.remove('active'));
-  torontoLink.classList.add('active');
-  
-  if (mapTracker) {
-    mapTracker.destroy();
-    mapTracker = null;
-  }
-  
-  torontoHub.stopAutoRefresh();
-  portHub.stopAutoRefresh();
-  
-  dashboardGrid.innerHTML = torontoHub.render();
-  
-  // Start auto-refresh
-  torontoHub.startAutoRefresh(() => {
-    dashboardGrid.innerHTML = torontoHub.render();
-  });
-});
-
-portsLink.addEventListener('click', () => {
-  navLinks.forEach(l => l.classList.remove('active'));
-  portsLink.classList.add('active');
-  
-  if (mapTracker) {
-    mapTracker.destroy();
-    mapTracker = null;
-  }
-  
-  torontoHub.stopAutoRefresh();
-  portHub.stopAutoRefresh();
-  
-  const renderPortView = () => {
-    dashboardGrid.innerHTML = portHub.render();
-    
-    // Attach port selector listeners
-    document.querySelectorAll('.port-selector-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const portName = e.target.getAttribute('data-port');
-        portHub.setPort(portName);
-        renderPortView();
-      });
-    });
+  const renderView = () => {
+    dashboardGrid.innerHTML = productManager.renderProductLibrary();
+    productManager.attachEventListeners();
   };
   
-  renderPortView();
-  
-  // Start auto-refresh
-  portHub.startAutoRefresh(() => {
-    renderPortView();
-  });
+  renderView();
 });
-
-aiAssistantLink.addEventListener('click', () => {
-  navLinks.forEach(l => l.classList.remove('active'));
-  aiAssistantLink.classList.add('active');
-  
-  if (mapTracker) {
-    mapTracker.destroy();
-    mapTracker = null;
-  }
-  
-  torontoHub.stopAutoRefresh();
-  portHub.stopAutoRefresh();
-  
-  const renderAIView = () => {
-    dashboardGrid.innerHTML = `
-      <section class="card" style="grid-column: span 12; height: 700px; padding: 0; overflow: hidden;">
-        ${aiAssistant.renderChatInterface()}
-      </section>
-    `;
-    
-    aiAssistant.attachEventListeners(renderAIView);
-  };
-  
-  renderAIView();
-});
-
-// Old Toronto view (backup)
-const showOldTorontoView = () => {
-  dashboardGrid.innerHTML = `
-    <section class="card route-calculator" style="grid-column: span 12;">
-      <div class="card-title">Toronto Gateway & GTA Logistics (Legacy View)</div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
-        <div>
-          <h3 style="color: var(--accent-blue); margin-bottom: 1rem;">400-Series Highway Monitor</h3>
-          <div style="background: rgba(100, 255, 218, 0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--glass-border);">
-            <div style="margin-bottom: 1rem;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span>Hwy 401 (Milton -> Whitby)</span>
-                <span style="color: var(--accent-orange)">HEAVY</span>
-              </div>
-              <div style="height: 4px; background: #333; border-radius: 2px;">
-                <div style="width: 85%; height: 100%; background: var(--accent-orange);"></div>
-              </div>
-            </div>
-            <div style="margin-bottom: 1rem;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span>Hwy 407 ETR</span>
-                <span style="color: var(--accent-blue)">FREE FLOW</span>
-              </div>
-              <div style="height: 4px; background: #333; border-radius: 2px;">
-                <div style="width: 20%; height: 100%; background: var(--accent-blue);"></div>
-              </div>
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
-              *Recommended: Reroute LTL loads via 407 for guaranteed morning delivery.
-            </p>
-          </div>
-        </div>
-        <div>
-          <h3 style="color: var(--accent-blue); margin-bottom: 1rem;">Intermodal Hub Status</h3>
-          <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="card" style="padding: 1rem;">
-              <div style="display: flex; justify-content: space-between;">
-                <strong>CN Brampton (BIT)</strong>
-                <span style="color: var(--accent-blue)">MODERATE WAIT</span>
-              </div>
-              <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary)">
-                Avg Gate Time: 45m | Terminal Utilization: 82%
-              </p>
-            </div>
-            <div class="card" style="padding: 1rem;">
-              <div style="display: flex; justify-content: space-between;">
-                <strong>CPKC Vaughan</strong>
-                <span style="color: var(--accent-blue)">FLUID</span>
-              </div>
-              <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary)">
-                Avg Gate Time: 25m | Terminal Utilization: 65%
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  `;
-};
 
 const trackingTable = document.getElementById('tracking-table');
 
@@ -462,6 +399,7 @@ function updateHistoryUI() {
   if (!dashboardGrid) return;
 
   let historyPanel = document.querySelector('.history-panel');
+
   if (!historyPanel) {
     historyPanel = document.createElement('section');
     historyPanel.className = 'card stats-panel history-panel';
